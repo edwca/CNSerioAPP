@@ -1,0 +1,55 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Información del usuario (adulto mayor o ejecutivo).",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "description": "ID único de Firebase Auth" },
+        "displayName": { "type": "string", "description": "Nombre completo" },
+        "email": { "type": "string", "description": "Correo electrónico" },
+        "role": { "type": "string", "enum": ["senior", "executive"], "description": "Rol del usuario" },
+        "assignedExecutiveId": { "type": "string", "description": "ID del ejecutivo asignado (solo para seniors)" },
+        "phoneNumber": { "type": "string", "description": "Número de contacto" },
+        "rut": { "type": "string", "description": "RUT del usuario" },
+        "address": { "type": "string", "description": "Calle de residencia" },
+        "addressNumber": { "type": "string", "description": "Número de casa/depto" },
+        "apartment": { "type": "string", "description": "Departamento u oficina" },
+        "healthPlan": { "type": "string", "description": "Plan de salud" },
+        "dataConsentAccepted": { "type": "boolean", "description": "Consentimiento de datos" },
+        "twoFAEnabled": { "type": "boolean", "description": "Estado de 2FA" }
+      },
+      "required": ["uid", "displayName", "role"]
+    },
+    "SOSRequest": {
+      "title": "SOS Request",
+      "description": "Alerta de auxilio generada por un adulto mayor.",
+      "type": "object",
+      "properties": {
+        "seniorId": { "type": "string", "description": "ID del abuelo que pide ayuda" },
+        "seniorName": { "type": "string", "description": "Nombre del abuelo" },
+        "executiveId": { "type": "string", "description": "ID del ejecutivo que debe atender" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "Fecha y hora de la solicitud" },
+        "status": { "type": "string", "enum": ["pending", "attending", "resolved"], "description": "Estado de la atención" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        }
+      },
+      "required": ["seniorId", "executiveId", "timestamp", "status"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Perfiles de usuario"
+    },
+    "sos_requests/{requestId}": {
+      "schema": "SOSRequest",
+      "description": "Historial de alertas SOS"
+    }
+  }
+}

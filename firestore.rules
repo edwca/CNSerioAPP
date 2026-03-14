@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "ecaceresmorales@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'displayName', 'role']) &&
+             data.uid is string &&
+             data.displayName is string &&
+             data.displayName.size() <= 100 &&
+             data.role in ['senior', 'executive', 'admin'] &&
+             (!('phoneNumber' in data) || (data.phoneNumber is string && data.phoneNumber.size() <= 20)) &&
+             (!('rut' in data) || (data.rut is string && data.rut.size() <= 20)) &&
+             (!('address' in data) || (data.address is string && data.address.size() <= 100)) &&
+             (!('addressNumber' in data) || (data.addressNumber is string && data.addressNumber.size() <= 20)) &&
+             (!('apartment' in data) || (data.apartment is string && data.apartment.size() <= 50)) &&
+             (!('healthPlan' in data) || (data.healthPlan is string && data.healthPlan.size() <= 100)) &&
+             (!('dataConsentAccepted' in data) || data.dataConsentAccepted is bool) &&
+             (!('twoFAEnabled' in data) || data.twoFAEnabled is bool);
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && 
+                      request.resource.data.role == resource.data.role;
+    }
+
+    match /sos_requests/{requestId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.seniorId || 
+        request.auth.uid == resource.data.executiveId
+      );
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.seniorId;
+      allow update: if isAuthenticated() && (
+        request.auth.uid == resource.data.seniorId || 
+        request.auth.uid == resource.data.executiveId
+      );
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "name": "CNSenior",
+  "description": "Aplicación de asistencia urgente para adultos mayores de Consalud, conectándolos instantáneamente con su ejecutivo mediante biometría.",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"]
+}
